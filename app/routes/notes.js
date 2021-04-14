@@ -4,6 +4,18 @@ const Note = require('../models/notes');
 const withAuth = require('../middlewares/auth');
 const { json } = require('express');
 
+router.get('/search', withAuth, async (req, res) => {
+  const { query } = req.query;
+  try {
+    let notes = await Note
+      .find({ author: req.user._id })
+      .find({ $text: { $search: query } });
+    res.json(notes);
+  } catch (error) {
+    res.json({ error: error }).status(500)
+  }
+})
+
 router.post('/', withAuth, async (req, res) => {
   const { title, body } = req.body;
 
@@ -13,6 +25,15 @@ router.post('/', withAuth, async (req, res) => {
     res.status(200).json(note)
   } catch (error) {
     res.status(500).json({ error: 'Error while creating a new note.' })
+  }
+})
+
+router.get('/', withAuth, async (req, res) => {
+  try {
+    let notes = await Note.find({ author: req.user._id })
+    res.json(notes);
+  } catch (error) {
+    res.status(500).json({ error: error })
   }
 })
 
@@ -27,15 +48,6 @@ router.get('/:id', withAuth, async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: 'Error while getting a note.' })
-  }
-})
-
-router.get('/', withAuth, async (req, res) => {
-  try {
-    let notes = await Note.find({ author: req.user._id })
-    res.json(notes);
-  } catch (error) {
-    res.status(500).json({ error: error })
   }
 })
 
