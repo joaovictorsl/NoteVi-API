@@ -1,9 +1,13 @@
 var express = require('express');
 var router = express.Router();
 const User = require('../models/user');
+const withAuth = require('../middlewares/auth');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const secret = process.env.JWT_TOKEN;
+const { json } = require('express');
+const bcrypt = require('bcrypt');
+const Notes = require('../models/notes');
 
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
@@ -32,6 +36,28 @@ router.post('/login', async (req, res) => {
         }
       })
     }
+  } catch (error) {
+    res.status(500).json({ error: 'Internal error, please try again.' })
+  }
+})
+
+router.put('/edit', withAuth, async (req, res) => {
+  let { email, password } = req.body;
+  try {
+    req.user.password = password;
+    await req.user.save();
+    await User.findOneAndUpdate({ _id: req.user._id }, { $set: { email: email, password: req.user.password } })
+    res.status(200).json({ update: 'ok' })
+  } catch (error) {
+    res.status(500).json({ error: 'Internal error, please try again.' })
+  }
+})
+
+router.delete('/delete/:id', withAuth, async (req, res) => {
+  try {
+    console.log(req.user)
+    await req.user.delete()
+    res.status(200).json({ delete: 'ok' })
   } catch (error) {
     res.status(500).json({ error: 'Internal error, please try again.' })
   }
