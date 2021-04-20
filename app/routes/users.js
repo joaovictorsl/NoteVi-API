@@ -40,7 +40,7 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ error: 'Internal error, please try again.' })
   }
 })
-
+//Delete and Update
 router.put('/edit', withAuth, async (req, res) => {
   let { email, password } = req.body;
   try {
