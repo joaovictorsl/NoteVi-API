@@ -55,7 +55,6 @@ router.put('/edit', withAuth, async (req, res) => {
 
 router.delete('/delete/:id', withAuth, async (req, res) => {
   try {
-    console.log(req.user)
     await req.user.delete()
     res.status(200).json({ delete: 'ok' })
   } catch (error) {
