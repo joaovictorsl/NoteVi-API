@@ -5,8 +5,6 @@ const withAuth = require('../middlewares/auth');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const secret = process.env.JWT_TOKEN;
-const { json } = require('express');
-const bcrypt = require('bcrypt');
 const Notes = require('../models/notes');
 
 router.post('/register', async (req, res) => {
@@ -41,13 +39,34 @@ router.post('/login', async (req, res) => {
   }
 })
 //Delete and Update
-router.put('/edit', withAuth, async (req, res) => {
-  let { email, password } = req.body;
+router.put('/edit/name', withAuth, async (req, res) => {
+  let { name } = req.body;
+  try {
+    await User.findOneAndUpdate({ _id: req.user._id }, { $set: { name: name } })
+    res.status(200).json({ update: 'ok' })
+  } catch (error) {
+    res.status(500).json({ error: 'Internal error, please try again.' })
+  }
+})
+router.put('/edit/email', withAuth, async (req, res) => {
+  let { email } = req.body;
+  try {
+    await User.findOneAndUpdate({ _id: req.user._id }, { $set: { email: email } })
+    const token = jwt.sign({ email }, secret, { expiresIn: '10d' });
+    res.json({ token: token }).status(200)
+  } catch (error) {
+    res.status(500).json({ error: 'Internal error, please try again.' })
+  }
+})
+router.put('/edit/password', withAuth, async (req, res) => {
+  let { password } = req.body;
+  console.log(`${password} aqui está a password`)
+  console.log(`${req.user} aqui está o user`)
   try {
     req.user.password = password;
     await req.user.save();
-    await User.findOneAndUpdate({ _id: req.user._id }, { $set: { email: email, password: req.user.password } })
-    res.status(200).json({ update: 'ok' })
+    let user = await User.findOneAndUpdate({ _id: req.user._id }, { $set: { password: req.user.password } })
+    res.status(200).json({ user: user })
   } catch (error) {
     res.status(500).json({ error: 'Internal error, please try again.' })
   }
@@ -56,6 +75,10 @@ router.put('/edit', withAuth, async (req, res) => {
 router.delete('/delete/:id', withAuth, async (req, res) => {
   try {
     await req.user.delete()
+    let notes = await Notes.find({ author: req.user._id })
+    for (let i = 0; i < notes.length; i++) {
+      await Notes.findByIdAndDelete(notes[i]._id)
+    }
     res.status(200).json({ delete: 'ok' })
   } catch (error) {
     res.status(500).json({ error: 'Internal error, please try again.' })
