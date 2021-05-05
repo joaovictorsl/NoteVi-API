@@ -60,8 +60,6 @@ router.put('/edit/email', withAuth, async (req, res) => {
 })
 router.put('/edit/password', withAuth, async (req, res) => {
   let { password } = req.body;
-  console.log(`${password} aqui está a password`)
-  console.log(`${req.user} aqui está o user`)
   try {
     req.user.password = password;
     await req.user.save();

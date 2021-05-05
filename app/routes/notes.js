@@ -31,7 +31,6 @@ router.post('/', withAuth, async (req, res) => {
 router.get('/', withAuth, async (req, res) => {
   try {
     let notes = await Note.find({ author: req.user._id })
-    console.log(notes)
     res.json(notes);
   } catch (error) {
     res.status(500).json({ error: error })

@@ -5,7 +5,9 @@
   "scripts": {
     "start": "nodemon ./bin/www"
   },
-  "engines": {"node": "10.19.0"},
+  "engines": {
+    "node": "10.19.0"
+  },
   "dependencies": {
     "bcrypt": "^5.0.1",
     "cookie-parser": "~1.4.4",
